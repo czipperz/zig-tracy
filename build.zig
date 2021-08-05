@@ -12,7 +12,8 @@ pub fn build(b: *std.build.Builder) void {
     const tracy_enable = b.option(bool, "tracy", "Enable Tracy integration.") orelse false;
     if (tracy_enable) {
         lib.addCSourceFile("tracy/TracyClient.cpp",
-                           &.{"-DTRACY_ENABLE=1", "-fno-sanitize=undefined"});
+                           &.{"-DTRACY_ENABLE=1", "-DTRACY_CALLSTACK=1",
+                              "-fno-sanitize=undefined"});
     }
 
     lib.install();
