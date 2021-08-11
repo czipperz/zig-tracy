@@ -1,14 +1,25 @@
 const std = @import("std");
 
 pub const c = @cImport(@cInclude("TracyC.h"));
-pub const enable = !std.builtin.is_test and @import("build_options").tracy_enable;
-pub const ZoneContext = c.TracyCZoneCtx;
 
+/// Get an instance of Tracy; if `enable = false` then all
+/// functions are stubbed (except for those ending in `Always`).
+///
+/// ```
+/// const std = @import("std");
+/// const enable = !std.builtin.is_test and @import("build_options").tracy_enable;
+/// pub usingnamespace @import("tracy").instance(enable);
+/// ```
+pub fn instance(enable: bool) type {
+return struct {
 const depth = 1;
 
 pub const Zone = struct {
-    usingnamespace if (!enable) struct {} else
-        struct { context: ZoneContext, };
+    pub const ZoneContext = if (!enable) struct {}
+                            else c.TracyCZoneCtx;
+
+    usingnamespace if (!enable) struct {}
+                   else struct { context: ZoneContext, };
 
     pub inline fn end(zone: Zone) void {
         if (enable)
@@ -137,4 +148,7 @@ pub inline fn plot(name: [*:0]const u8, val: c_double) void {
 pub inline fn appInfo(text: []const u8) void {
     if (enable)
         c.___tracy_emit_message_appinfo(text.ptr, text.len);
+}
+
+};
 }
